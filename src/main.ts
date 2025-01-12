@@ -13,7 +13,7 @@ async function main() {
     const provider = core.getInput('AI_PROVIDER');
     const model = core.getInput('AI_MODEL');
     const apiKey = core.getInput('AI_API_KEY');
-    const githubToken = core.getInput('GITHUB_TOKEN');
+    const githubToken = core.getInput('ALTERNATIVE_GITHUB_TOKEN') ?? core.getInput('GITHUB_TOKEN');
     const temperature = parseFloat(core.getInput('AI_TEMPERATURE') || '0');
 
     // Get new configuration inputs
