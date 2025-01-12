@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const token = process.env.GITHUB_TOKEN;
-const owner = 'demandio';
+const owner = 'chorim';
 const repo = process.argv[2] || 'simplycodes-extension';
 const pr_number = parseInt(process.argv[3], 10) || 982;
 
