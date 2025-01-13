@@ -21,6 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_MODEL: "gpt-4o-mini"
+          ALTERNATIVE_GITHUB_TOKEN: ${{ secrets.ALTERNATIVE_GITHUB_TOKEN }}
           REVIEW_MAX_COMMENTS: 5 # Optional: defaults to 10
           APPROVE_REVIEWS: true # Optional: defaults to false
           exclude: "yarn.lock,dist/**"
