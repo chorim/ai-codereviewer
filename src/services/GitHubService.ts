@@ -81,75 +81,29 @@ export class GitHubService {
 
     core.info(`Submitting review with ${comments.length} comments`);
     core.debug(`Review comments: ${JSON.stringify(comments, null, 2)}`);
-
-    await this.octokit.pulls.createReview({
-      owner: this.owner,
-      repo: this.repo,
-      pull_number: prNumber,
-      body: summary,
-      comments,
-      event: suggestedAction.toUpperCase() as 'APPROVE' | 'REQUEST_CHANGES' | 'COMMENT'
-    });
+    try {
+      await this.octokit.pulls.createReview({
+          owner: this.owner,
+          repo: this.repo,
+          pull_number: prNumber,
+          body: summary,
+          comments,
+          event: suggestedAction.toUpperCase() as 'APPROVE' | 'REQUEST_CHANGES' | 'COMMENT'
+      });
   }
-
-  /**
-   * This is a hack to get the position of a line in the diff.
-   * It's not perfect, but it's better than nothing.
-   * It's based on the patch file, which is not always available.
-   * It's also not always accurate, but it's better than nothing.
-   *
-   * @deprecated
-   */
-  private async getDiffPosition(prNumber: number, filePath: string, line: number): Promise<number> {
-    const { data: files } = await this.octokit.pulls.listFiles({
-      owner: this.owner,
-      repo: this.repo,
-      pull_number: prNumber
-    });
-
-    const file = files.find(f => f.filename === filePath);
-    if (!file) {
-      throw new Error(`File ${filePath} not found in PR diff`);
+  catch (error) {
+      core.warning(`Failed to submit review with comments: ${error}`);
+      core.info('Retrying without line comments...');
+      // Retry without comments
+      await this.octokit.pulls.createReview({
+          owner: this.owner,
+          repo: this.repo,
+          pull_number: prNumber,
+          body: `${summary}\n\n> Note: Some line comments were omitted due to technical limitations.`,
+          comments: [],
+          event: suggestedAction.toUpperCase() as 'APPROVE' | 'REQUEST_CHANGES' | 'COMMENT'
+      });
     }
-
-    const patch = file.patch || '';
-    let position = 0;
-    let oldLine = 0;
-    let newLine = 0;
-
-    for (const patchLine of patch.split('\n')) {
-      if (patchLine.startsWith('@@')) {
-        const match = patchLine.match(/@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
-        if (match) {
-          oldLine = parseInt(match[1], 10) - 1;
-          newLine = parseInt(match[2], 10) - 1;
-        }
-        continue;
-      }
-
-      position++;
-
-      if (patchLine.startsWith('-')) {
-        oldLine++;
-        if (oldLine === line) {
-          return position;
-        }
-      } else if (patchLine.startsWith('+')) {
-        newLine++;
-        if (newLine === line) {
-          return position;
-        }
-      } else {
-        oldLine++;
-        newLine++;
-        if (newLine === line || oldLine === line) {
-          return position;
-        }
-      }
-    }
-
-    core.error(`Failed to find line ${line} in diff. Last old line: ${oldLine}, last new line: ${newLine}`);
-    throw new Error(`Line ${line} not found in diff for ${filePath}`);
   }
 
   async getLastReviewedCommit(prNumber: number): Promise<string | null> {

@@ -49,13 +49,13 @@ const GitHubService_1 = __nccwpck_require__(7076);
 const DiffService_1 = __nccwpck_require__(1676);
 const fs_1 = __nccwpck_require__(9896);
 async function main() {
-    var _a, _b;
+    var _a, _b, _c;
     try {
         // Get inputs
         const provider = core.getInput('AI_PROVIDER');
         const model = core.getInput('AI_MODEL');
         const apiKey = core.getInput('AI_API_KEY');
-        const githubToken = core.getInput('GITHUB_TOKEN');
+        const githubToken = (_a = core.getInput('ALTERNATIVE_GITHUB_TOKEN')) !== null && _a !== void 0 ? _a : core.getInput('GITHUB_TOKEN');
         const temperature = parseFloat(core.getInput('AI_TEMPERATURE') || '0');
         // Get new configuration inputs
         const approveReviews = core.getBooleanInput('APPROVE_REVIEWS');
@@ -83,7 +83,7 @@ async function main() {
         const prNumber = getPRNumberFromContext();
         // Perform review
         const review = await reviewService.performReview(prNumber);
-        core.info(`Review completed with ${(_b = (_a = review.lineComments) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0} comments`);
+        core.info(`Review completed with ${(_c = (_b = review.lineComments) === null || _b === void 0 ? void 0 : _b.length) !== null && _c !== void 0 ? _c : 0} comments`);
     }
     catch (error) {
         core.setFailed(`Action failed: ${error.message}`);
